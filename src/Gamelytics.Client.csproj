@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9</TargetFrameworks>
+    <PackageId>Gamelytics.Client</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Gamelytics.io</Authors>
+    <Company>Gamelytics</Company>
+    <Description>Official Gamelytics.io analytics client for .NET.</Description>
+    <PackageTags>analytics;games;gamedev;telemetry</PackageTags>
+<!-- 
+    <RepositoryUrl>https://github.com/gamelytics/gamelytics-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType> -->
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="./README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.Text.Json" Version="10.0.3" />
+  </ItemGroup>
+
+</Project>
