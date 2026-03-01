@@ -8,9 +8,9 @@
     <Company>Gamelytics</Company>
     <Description>Official Gamelytics.io analytics client for .NET.</Description>
     <PackageTags>analytics;games;gamedev;telemetry</PackageTags>
-<!-- 
-    <RepositoryUrl>https://github.com/gamelytics/gamelytics-dotnet</RepositoryUrl>
-    <RepositoryType>git</RepositoryType> -->
+
+    <RepositoryUrl>https://github.com/gamelytics/dotnet-glx-client</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
 
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
