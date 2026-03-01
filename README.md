@@ -1,7 +1,6 @@
 # Gamelytics.io Client Library for .NET
 
-[![NuGet Version](https://img.shields.io/nuget/v/GlxClient.svg)](https://www.nuget.org/packages/GlxClient/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
+[![NuGet Version](https://img.shields.io/nuget/v/Gamelytics.Client.svg)](https://www.nuget.org/packages/Gamelytics.Client/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ## Overview
 
 The Gamelytics (GLX) Client is a C# (.NET 9) library for integrating with the Gamelytics.io API. It allows you to log game events, submit player scores, and fetch leaderboards from your .NET applications. This library is a port from the original GDScript version designed for Godot, adapted for general .NET use (e.g., Unity, console apps, or web services).
