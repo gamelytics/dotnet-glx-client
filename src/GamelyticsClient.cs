@@ -4,19 +4,36 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-
+/// <summary>
+/// Gamelytics client for logging game events and scores.
+/// </summary>
 public class GlxClient
 {
-    // Events (replacing signals)
-    public event Action<List<Dictionary<string, object>>> OnScoresFetched;
-    public event Action<bool, string, string> OnRequestCompleted;
+    /// <summary>
+    /// Fired when scores are successfully fetched from the server.
+    /// </summary>
+    public event Action<List<Dictionary<string, object>>>? OnScoresFetched;
+
+    /// <summary>
+    /// Fired when a request completes (success or failure).
+    /// </summary>
+    public event Action<bool, string, string>? OnRequestCompleted;
 
     // Constants
     private const string ApiBaseUrl = "https://api.gamelytics.io/";
     private const string EventApiEndpoint = "events";
     private const string ScoreApiEndpoint = "scores";
 
-    public enum MetadataType { Event, Score }
+    /// <summary>
+    /// Metadata type enumeration for event or score metadata.
+    /// </summary>
+    public enum MetadataType
+    {
+        /// <summary>Event metadata type.</summary>
+        Event,
+        /// <summary>Score metadata type.</summary>
+        Score
+    }
 
     private Dictionary<string, object>[] _defaultMetadata = new Dictionary<string, object>[2] { new(), new() };
 
@@ -41,7 +58,16 @@ public class GlxClient
 
 
     // Constructor
-    public GlxClient(string gameKey, string gameSecret, string gameVersion = "1.0.0", bool autoSessionStart = false, bool showDebugMessages = false, string playerIdFilePath = null)
+    /// <summary>
+    /// Initializes a new instance of the Gamelytics client.
+    /// </summary>
+    /// <param name="gameKey">The game key for authentication.</param>
+    /// <param name="gameSecret">The game secret for HMAC signature generation.</param>
+    /// <param name="gameVersion">The version of the game (default: "1.0.0").</param>
+    /// <param name="autoSessionStart">Whether to automatically log session_start on Init (default: false).</param>
+    /// <param name="showDebugMessages">Whether to print debug messages to console (default: false).</param>
+    /// <param name="playerIdFilePath">Custom file path for storing player ID (default: AppData directory).</param>
+    public GlxClient(string gameKey, string gameSecret, string gameVersion = "1.0.0", bool autoSessionStart = false, bool showDebugMessages = false, string? playerIdFilePath = null)
     {
         _gameKey = gameKey;
         _gameSecret = gameSecret;
@@ -106,7 +132,11 @@ public class GlxClient
         _sessionId = GenerateSessionId();
     }
 
-    // Generates a new PlayerID even if there is already one assigned
+    /// <summary>
+    /// Generates and assigns a new player ID, optionally with a random component.
+    /// </summary>
+    /// <param name="random">Whether to include a random value in the ID generation.</param>
+    /// <returns>The newly generated player ID.</returns>
     public string ComputeNewPlayerId(bool random = false)
     {
         _playerId = GeneratePlayerId(random);
@@ -202,8 +232,15 @@ public class GlxClient
                 {
                     throw new Exception("Missing 'data' property");
                 }
-                List<Dictionary<string, object>> scores = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(dataElement.GetRawText());
-                OnScoresFetched?.Invoke(scores);
+                var scores = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(dataElement.GetRawText());
+                if (scores != null)
+                {
+                    OnScoresFetched?.Invoke(scores);
+                }
+                else
+                {
+                    throw new Exception("Failed to deserialize scores");
+                }
             }
             catch (Exception ex)
             {
@@ -242,7 +279,10 @@ public class GlxClient
         return Uri.EscapeDataString(value);
     }
 
-    // Mandatory initialization method. Must be called before any other methods can be called.
+    /// <summary>
+    /// Mandatory initialization method. Must be called before any other methods.
+    /// </summary>
+    /// <param name="force">Whether to reinitialize even if already initialized.</param>
     public void Init(bool force = false)
     {
         if (_initialized && !force)
@@ -262,14 +302,21 @@ public class GlxClient
         }
     }
 
-    // Developer override for player ID
+    /// <summary>
+    /// Sets a custom player ID.
+    /// </summary>
+    /// <param name="customId">The custom player ID to set.</param>
     public void SetPlayerId(string customId)
     {
         _playerId = customId.Trim();
         SavePlayerId();
     }
 
-    // Developer option to set (override) the entire default metadata (default metadata persists across calls)
+    /// <summary>
+    /// Sets the entire default metadata dictionary for a metadata type.
+    /// </summary>
+    /// <param name="type">The metadata type (Event or Score).</param>
+    /// <param name="meta">The metadata dictionary to set.</param>
     public void SetDefaultMetadata(MetadataType type, Dictionary<string, object> meta)
     {
         _defaultMetadata[(int)type].Clear();
@@ -279,19 +326,30 @@ public class GlxClient
         }
     }
 
-    // Developer option to add or override specific (default) metadata values (default metadata persists across calls)
+    /// <summary>
+    /// Adds or overrides a specific default metadata field.
+    /// </summary>
+    /// <param name="type">The metadata type (Event or Score).</param>
+    /// <param name="key">The metadata key.</param>
+    /// <param name="value">The metadata value.</param>
     public void SetDefaultMetadataField(MetadataType type, string key, object value)
     {
         _defaultMetadata[(int)type][key] = value;
     }
 
-    // Resets the default_metadata dictionary to their default values
+    /// <summary>
+    /// Resets the default metadata for a metadata type to its initial values.
+    /// </summary>
+    /// <param name="type">The metadata type to reset.</param>
     public void ResetDefaultMetadata(MetadataType type)
     {
         InitDefaultMetadata(type);
     }
 
-    // Prints the current default_metadata dictionary
+    /// <summary>
+    /// Prints the current default metadata dictionary to console.
+    /// </summary>
+    /// <param name="type">The metadata type to print.</param>
     public void PrintDefaultMetadata(MetadataType type)
     {
         string output = "{ ";
@@ -303,14 +361,21 @@ public class GlxClient
         Console.WriteLine(output);
     }
 
-    // Lets the user enable/disable debug (print) messages. Can also be set in the constructor
+    /// <summary>
+    /// Enables or disables debug (print) messages to console.
+    /// </summary>
+    /// <param name="show">Whether to show debug messages.</param>
     public void SetDebugMessages(bool show = true)
     {
         _showDebugMessages = show;
     }
 
-    // Log a game EVENT
-    public void LogEvent(string eventType, Dictionary<string, object> metadata = null)
+    /// <summary>
+    /// Logs a custom game event with optional metadata.
+    /// </summary>
+    /// <param name="eventType">The type of event to log.</param>
+    /// <param name="metadata">Optional metadata to include with the event.</param>
+    public void LogEvent(string eventType, Dictionary<string, object>? metadata = null)
     {
         if (metadata == null) metadata = new Dictionary<string, object>();
         const string requestType = "log_event";
@@ -409,7 +474,10 @@ public class GlxClient
         }, TaskScheduler.Default);
     }
 
-    // Waits for all currently in-flight requests to complete.
+    /// <summary>
+    /// Waits for all currently in-flight requests to complete.
+    /// </summary>
+    /// <returns>A task that completes when all pending requests are done.</returns>
     public Task WaitForPendingRequestsAsync()
     {
         Task[] snapshot;
@@ -421,8 +489,12 @@ public class GlxClient
         return snapshot.Length == 0 ? Task.CompletedTask : Task.WhenAll(snapshot);
     }
 
-    // Logs an event of the type 'screen_view'
-    public void LogScreenView(string screenId, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a screen_view event.
+    /// </summary>
+    /// <param name="screenId">The ID of the screen being viewed.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogScreenView(string screenId, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "screen_id", screenId } };
@@ -430,8 +502,13 @@ public class GlxClient
         LogEvent("screen_view", meta);
     }
 
-    // Logs an event of the type 'level_start'
-    public void LogLevelStart(string level, string difficulty = "", Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a level_start event.
+    /// </summary>
+    /// <param name="level">The level identifier.</param>
+    /// <param name="difficulty">The difficulty level.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogLevelStart(string level, string difficulty = "", Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "level", level } };
@@ -440,8 +517,13 @@ public class GlxClient
         LogEvent("level_start", meta);
     }
 
-    // Logs an event of the type 'level_complete'
-    public void LogLevelComplete(string level, bool success = true, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a level_complete event.
+    /// </summary>
+    /// <param name="level">The level identifier.</param>
+    /// <param name="success">Whether the level was completed successfully.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogLevelComplete(string level, bool success = true, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "level_id", level }, { "success", success } };
@@ -449,8 +531,15 @@ public class GlxClient
         LogEvent("level_complete", meta);
     }
 
-    // Logs an event of the type 'item_acquired'
-    public void LogItemAcquired(string itemId, string itemName = "", string method = "pickup", int quantity = 1, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs an item_acquired event.
+    /// </summary>
+    /// <param name="itemId">The item identifier.</param>
+    /// <param name="itemName">The item name.</param>
+    /// <param name="method">The acquisition method (e.g., "pickup").</param>
+    /// <param name="quantity">The quantity acquired.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogItemAcquired(string itemId, string itemName = "", string method = "pickup", int quantity = 1, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "item_id", itemId }, { "acquisition_method", method }, { "quantity", quantity } };
@@ -459,8 +548,12 @@ public class GlxClient
         LogEvent("item_acquired", meta);
     }
 
-    // Logs an event of the type 'session_start'. Generates a new session_id by default.
-    public void LogSessionStart(bool newSessionId = true, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a session_start event. Generates a new session ID by default.
+    /// </summary>
+    /// <param name="newSessionId">Whether to generate a new session ID.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogSessionStart(bool newSessionId = true, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         if (newSessionId)
@@ -471,15 +564,23 @@ public class GlxClient
         LogEvent("session_start", extra);
     }
 
-    // Logs an event of the type 'session_end'
-    public void LogSessionEnd(Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a session_end event.
+    /// </summary>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogSessionEnd(Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         LogEvent("session_end", extra);
     }
 
-    // Logs an event of the type 'menu_open'
-    public void LogMenuOpen(string screenId, string menuId, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a menu_open event.
+    /// </summary>
+    /// <param name="screenId">The screen ID.</param>
+    /// <param name="menuId">The menu identifier.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogMenuOpen(string screenId, string menuId, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "screen_id", screenId }, { "menu_id", menuId } };
@@ -487,8 +588,12 @@ public class GlxClient
         LogEvent("menu_open", meta);
     }
 
-    // Logs an event of the type 'new_game'
-    public void LogNewGame(string matchId, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a new_game event.
+    /// </summary>
+    /// <param name="matchId">The match identifier.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogNewGame(string matchId, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "match_id", matchId } };
@@ -496,8 +601,14 @@ public class GlxClient
         LogEvent("new_game", meta);
     }
 
-    // Logs an event of the type 'game_over'
-    public void LogGameOver(string matchId, float duration = 0, string level = "", Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a game_over event.
+    /// </summary>
+    /// <param name="matchId">The match identifier.</param>
+    /// <param name="duration">The game duration in seconds.</param>
+    /// <param name="level">The level information.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogGameOver(string matchId, float duration = 0, string level = "", Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "match_id", matchId } };
@@ -507,8 +618,12 @@ public class GlxClient
         LogEvent("game_over", meta);
     }
 
-    // Logs an event of the type 'friend_invite'
-    public void LogFriendInvite(string friendId, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a friend_invite event.
+    /// </summary>
+    /// <param name="friendId">The friend identifier.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogFriendInvite(string friendId, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "friend_id", friendId } };
@@ -516,8 +631,13 @@ public class GlxClient
         LogEvent("friend_invite", meta);
     }
 
-    // Logs an event of the type 'time_spent'
-    public void LogTimeSpent(string activityId, float duration, Dictionary<string, object> extra = null)
+    /// <summary>
+    /// Logs a time_spent event.
+    /// </summary>
+    /// <param name="activityId">The activity identifier.</param>
+    /// <param name="duration">The duration in seconds.</param>
+    /// <param name="extra">Optional additional metadata.</param>
+    public void LogTimeSpent(string activityId, float duration, Dictionary<string, object>? extra = null)
     {
         if (extra == null) extra = new Dictionary<string, object>();
         var meta = new Dictionary<string, object> { { "activity_id", activityId } };
@@ -526,8 +646,14 @@ public class GlxClient
         LogEvent("time_spent", meta);
     }
 
-    // Sends a game SCORE log request to the server
-    public (bool, string) LogScore(int score, string name = "", Dictionary<string, object> metadata = null)
+    /// <summary>
+    /// Logs a score to the server.
+    /// </summary>
+    /// <param name="score">The score value.</param>
+    /// <param name="name">The player name.</param>
+    /// <param name="metadata">Optional metadata to include with the score.</param>
+    /// <returns>A tuple containing success status and a message.</returns>
+    public (bool, string) LogScore(int score, string name = "", Dictionary<string, object>? metadata = null)
     {
         if (metadata == null) metadata = new Dictionary<string, object>();
 
@@ -591,7 +717,13 @@ public class GlxClient
         return (true, "Save score request sent to Gamelytics");
     }
 
-    // Fetches the score table for the current game and/or specific player
+    /// <summary>
+    /// Fetches the leaderboard/score table from the server.
+    /// </summary>
+    /// <param name="playerId">Optional player ID to filter scores.</param>
+    /// <param name="page">The page number of results.</param>
+    /// <param name="rows">The number of rows per page.</param>
+    /// <param name="timeRange">The time range filter (e.g., "all_time", "monthly").</param>
     public void FetchScores(string playerId = "", int page = 1, int rows = 20, string timeRange = "all_time")
     {
         const string requestType = "fetch_scores";
@@ -630,8 +762,11 @@ public class GlxClient
         var queryComponents = new List<string>();
         foreach (var key in sortedKeys)
         {
-            string value = queryDict[key].ToString();
-            queryComponents.Add($"{UrlEncode(key)}={UrlEncode(value)}");
+            string? value = queryDict[key]?.ToString();
+            if (value != null)
+            {
+                queryComponents.Add($"{UrlEncode(key)}={UrlEncode(value)}");
+            }
         }
 
         string queryString = string.Join("&", queryComponents);
