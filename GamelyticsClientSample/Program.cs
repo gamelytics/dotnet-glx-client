@@ -1,6 +1,9 @@
 ﻿
 // 1: Initialize the client with your game credentials and optional settings
 
+using Gamelytics.Client;
+
+
 var client = new GlxClient
 (
     gameKey: "your-game-key",          // Required: Obtained from Gamelytics Portal
