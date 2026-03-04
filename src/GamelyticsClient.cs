@@ -4,6 +4,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
+
+namespace Gamelytics.Client;
+
 /// <summary>
 /// Gamelytics client for logging game events and scores.
 /// </summary>

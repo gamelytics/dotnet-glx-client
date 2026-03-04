@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net9</TargetFrameworks>
     <PackageId>Gamelytics.Client</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Gamelytics.io</Authors>
     <Company>Gamelytics</Company>
     <Description>Official Gamelytics.io analytics client for .NET.</Description>
