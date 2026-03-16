@@ -51,6 +51,12 @@ public class GlxClient
     private readonly HttpClient _httpClient = new HttpClient();
     private bool _initialized = false;
 
+    /// <summary>
+    /// Gets or sets whether Test Mode is enabled. When true, events and scores are validated
+    /// but not stored in the database. Useful for development and testing.
+    /// </summary>
+    public bool TestMode { get; set; } = false;
+
     private string _playerId = "";
     private readonly string _playerIdFilePath;
     private string _sessionId = "";
@@ -430,6 +436,11 @@ public class GlxClient
             $"GLX-Signature: {signature}"
         };
 
+        if (TestMode)
+        {
+            headers.Add("GLX-TestMode: true");
+        }
+
         // Start async request
         _lastRequestType = requestType;
         TrackPendingRequest(SendPostRequestAsync(ApiBaseUrl + EventApiEndpoint, jsonBody, headers, _lastRequestType));
@@ -707,6 +718,11 @@ public class GlxClient
             $"GLX-Timestamp: {timestamp}",
             $"GLX-Signature: {signature}"
         };
+
+        if (TestMode)
+        {
+            headers.Add("GLX-TestMode: true");
+        }
 
         // Start async request
         _lastRequestType = "log_score";
