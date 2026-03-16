@@ -169,6 +169,18 @@ client.FetchScores(playerId: "specific-player-id", page: 1, rows: 10, timeRange:
 - `timeRange`: "all_time", "day", "week", "month".
 - If `playerId` is empty, fetches global leaderboard.
 
+### Test Mode
+Enable Test Mode to validate requests without storing events or scores in the database. This is useful for development, testing, and CI/CD pipelines:
+
+```csharp
+client.TestMode = true;
+
+client.LogEvent("test_event");  // Validated but not stored
+client.LogScore(100, "TestPlayer");  // Validated but not stored
+```
+
+When `TestMode` is `true`, the client adds a `GLX-TestMode: true` header to both LogEvent and LogScore requests. The API fully processes and validates these requests but discards them after processing.
+
 ### Debug Mode
 Enable/disable console logging:
 
