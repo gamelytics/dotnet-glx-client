@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net9</TargetFrameworks>
     <PackageId>Gamelytics.Client</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Authors>Gamelytics.io</Authors>
     <Company>Gamelytics</Company>
     <Description>Official Gamelytics.io analytics client for .NET.</Description>
@@ -22,6 +22,14 @@
 
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>
